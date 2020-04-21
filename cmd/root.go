@@ -14,9 +14,7 @@ var rootCmd = &cobra.Command{
 
 // Execute -
 func Execute() {
-	rootCmd.AddCommand(categoryListCmd)
-	rootCmd.AddCommand(categoryPlaylistsCmd)
-	rootCmd.AddCommand(recommendationsByArtistsCmd)
+	rootCmd.AddCommand(commands...)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println("Failed to execute context")
