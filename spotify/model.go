@@ -73,3 +73,13 @@ type GetRecommendationsByArtistInner struct {
 type GetRecommendationsByArtistOutput struct {
 	Tracks []Track `json:"tracks"`
 }
+
+// GetNewReleasesInner -
+type GetNewReleasesInner struct {
+	Items []Album `json:"items"`
+}
+
+// GetNewReleasesOutput -
+type GetNewReleasesOutput struct {
+	Inner GetNewReleasesInner `json:"albums"`
+}

@@ -8,7 +8,7 @@ import (
 )
 
 var commands = []*cobra.Command{
-	&cobra.Command{
+	{
 		Use:   "categories",
 		Short: "Get a list of categories",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -26,7 +26,7 @@ var commands = []*cobra.Command{
 			}
 		},
 	},
-	&cobra.Command{
+	{
 		Use:   "category-playlist",
 		Short: "Get a list of playlists tagged with the specified category",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -44,7 +44,25 @@ var commands = []*cobra.Command{
 			}
 		},
 	},
-	&cobra.Command{
+	{
+		Use:   "new-releases",
+		Short: "Get a list of new album releases featured in Spotify",
+		Run: func(cmd *cobra.Command, args []string) {
+			spotifyClient, err := spotify.NewClient()
+			if err != nil {
+				fmt.Println("Failed to create new spotify client")
+			}
+			out, err := spotifyClient.GetNewReleases(cmd.Context())
+			if err != nil {
+				fmt.Println("Failed to get new releases")
+			}
+
+			for _, album := range out.Inner.Items {
+				fmt.Println(album.Name)
+			}
+		},
+	},
+	{
 		Use:   "recommendations",
 		Short: "Get recommended tracks based on the provided artist",
 		Run: func(cmd *cobra.Command, args []string) {

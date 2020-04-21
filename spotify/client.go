@@ -22,6 +22,7 @@ type Client interface {
 	GetCategoryList(ctx context.Context) (*GetCategoriesOutput, error)
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
 	GetRecommendationsByArtists(ctx context.Context, artists ...string) (*GetRecommendationsByArtistOutput, error)
+	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
 }
 
 // DefaultClient -
@@ -131,6 +132,32 @@ func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists
 		Destination: &output,
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get recommendations by artist")
+	}
+
+	return &output, nil
+}
+
+// GetNewReleases -
+func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error) {
+	tokenResponse, err := c.getAccessToken()
+	if err != nil {
+		return nil, errors.WithMessage(err, "Failed to get access token")
+	}
+
+	queryParams := &map[string]string{
+		"limit": "50",
+	}
+	headers := &map[string]string{
+		"Authorization": "Bearer " + tokenResponse.AccessToken,
+	}
+	var output GetNewReleasesOutput
+	if err := c.requestor.Get(ctx, &httputil.GetInput{
+		URL:         "https://api.spotify.com/v1/browse/new-releases",
+		QueryParams: queryParams,
+		Headers:     headers,
+		Destination: &output,
+	}); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get new releases")
 	}
 
 	return &output, nil
