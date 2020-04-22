@@ -83,3 +83,25 @@ type GetNewReleasesInner struct {
 type GetNewReleasesOutput struct {
 	Inner GetNewReleasesInner `json:"albums"`
 }
+
+// Followers -
+type Followers struct {
+	Total int `json:"total"`
+}
+
+// Artist -
+type Artist struct {
+	Name       string    `json:"name"`
+	Popularity int       `json:"popularity"`
+	Followers  Followers `json:"followers"`
+}
+
+// GetArtistInner -
+type GetArtistInner struct {
+	Artists []Artist `json:"items"`
+}
+
+// GetArtistOutput -
+type GetArtistOutput struct {
+	Inner GetArtistInner `json:"artists"`
+}

@@ -15,8 +15,6 @@ import (
 type Requestor interface {
 	Get(ctx context.Context, input *GetInput) error
 	// Post() error
-	// Put() error
-	// Delete() error
 }
 
 // DefaultRequestor -
@@ -140,15 +138,5 @@ func (r *DefaultRequestor) addHeadersToRequest(headers *map[string]string, req *
 // 	if err := json.Unmarshal(body, destination); err != nil {
 // 		return errors.WithMessage(err, "Failed to unmarshal response body")
 // 	}
-// 	return nil
-// }
-
-// // Put -
-// func (r *DefaultRequestor) Put() error {
-// 	return nil
-// }
-
-// // Delete -
-// func (r *DefaultRequestor) Delete() error {
 // 	return nil
 // }

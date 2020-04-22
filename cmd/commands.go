@@ -9,6 +9,38 @@ import (
 
 var commands = []*cobra.Command{
 	{
+		Use:   "token",
+		Short: "Get an auth token used for authenticating requests to the spotify api",
+		Run: func(cmd *cobra.Command, args []string) {
+			spotifyClient, err := spotify.NewClient()
+			if err != nil {
+				fmt.Println(err, "Failed to create new spotify client")
+				return
+			}
+			out, err := spotifyClient.GetToken()
+			if err != nil {
+				fmt.Println(err, "Failed to get token")
+			}
+			fmt.Println(out.AccessToken)
+		},
+	},
+	{
+		Use:   "artist",
+		Short: "Get an artist",
+		Run: func(cmd *cobra.Command, args []string) {
+			spotifyClient, err := spotify.NewClient()
+			if err != nil {
+				fmt.Println(err, "Failed to create new spotify client")
+				return
+			}
+			out, err := spotifyClient.GetArtist(cmd.Context(), args[0])
+			if err != nil {
+				fmt.Println(err, "Failed to get artist")
+			}
+			fmt.Println(fmt.Sprintf("Name: %s, Follower Count: %d, Popularity: %d", out.Inner.Artists[0].Name, out.Inner.Artists[0].Followers.Total, out.Inner.Artists[0].Popularity))
+		},
+	},
+	{
 		Use:   "categories",
 		Short: "Get a list of categories",
 		Run: func(cmd *cobra.Command, args []string) {
