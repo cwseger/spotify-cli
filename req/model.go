@@ -1,4 +1,4 @@
-package http_util
+package req
 
 // GetInput -
 type GetInput struct {

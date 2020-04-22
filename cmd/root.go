@@ -17,7 +17,7 @@ func Execute() {
 	rootCmd.AddCommand(commands...)
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println("Failed to execute context")
+		fmt.Println(err, "Failed to execute context")
 		os.Exit(1)
 	}
 }

@@ -1,4 +1,4 @@
-package http_util
+package req
 
 import (
 	"context"
@@ -77,6 +77,7 @@ func (r *DefaultRequestor) Post(ctx context.Context, input *PostInput) error {
 	for k, v := range *input.Body {
 		bodyValues.Set(k, v)
 	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(bodyValues.Encode()))
 	if err != nil {
 		return errors.WithMessage(err, "Failed to build new POST request with context")

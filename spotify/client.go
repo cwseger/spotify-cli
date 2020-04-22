@@ -10,7 +10,7 @@ import (
 
 	"strings"
 
-	httputil "github.com/cwseger/spotify-cli/http_util"
+	req "github.com/cwseger/spotify-cli/req"
 
 	"github.com/pkg/errors"
 )
@@ -29,7 +29,7 @@ type Client interface {
 type DefaultClient struct {
 	clientID     string
 	clientSecret string
-	requestor    httputil.Requestor
+	req          req.Requestor
 }
 
 // NewClient -
@@ -50,7 +50,7 @@ func NewClient() (*DefaultClient, error) {
 	return &DefaultClient{
 		clientID:     secrets.ClientID,
 		clientSecret: secrets.ClientSecret,
-		requestor:    httputil.NewRequestor(),
+		req:          req.NewRequestor(),
 	}, nil
 }
 
@@ -70,7 +70,7 @@ func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArt
 		"Authorization": "Bearer " + tokenResponse.AccessToken,
 	}
 	var output GetArtistOutput
-	if err := c.requestor.Get(ctx, &httputil.GetInput{
+	if err := c.req.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/search",
 		QueryParams: queryParams,
 		Headers:     headers,
@@ -96,7 +96,7 @@ func (c *DefaultClient) GetCategoryList(ctx context.Context) (*GetCategoriesOutp
 		"Authorization": "Bearer " + tokenResponse.AccessToken,
 	}
 	var output GetCategoriesOutput
-	if err := c.requestor.Get(ctx, &httputil.GetInput{
+	if err := c.req.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/browse/categories",
 		QueryParams: queryParams,
 		Headers:     headers,
@@ -125,7 +125,7 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 		"Authorization": "Bearer " + tokenResponse.AccessToken,
 	}
 	var output GetCategoryPlaylistsOutput
-	if err := c.requestor.Get(ctx, &httputil.GetInput{
+	if err := c.req.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/browse/categories/{categoryID}/playlists",
 		Slugs:       slugs,
 		QueryParams: queryParams,
@@ -153,7 +153,7 @@ func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists
 		"Authorization": "Bearer " + tokenResponse.AccessToken,
 	}
 	var output GetRecommendationsByArtistOutput
-	if err := c.requestor.Get(ctx, &httputil.GetInput{
+	if err := c.req.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/recommendations",
 		QueryParams: queryParams,
 		Headers:     headers,
@@ -179,7 +179,7 @@ func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutp
 		"Authorization": "Bearer " + tokenResponse.AccessToken,
 	}
 	var output GetNewReleasesOutput
-	if err := c.requestor.Get(ctx, &httputil.GetInput{
+	if err := c.req.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/browse/new-releases",
 		QueryParams: queryParams,
 		Headers:     headers,
@@ -208,7 +208,7 @@ func (c *DefaultClient) getAccessToken(ctx context.Context) (*GetTokenOutput, er
 		"grant_type": "client_credentials",
 	}
 	var output GetTokenOutput
-	if err := c.requestor.Post(ctx, &httputil.PostInput{
+	if err := c.req.Post(ctx, &req.PostInput{
 		URL:         "https://accounts.spotify.com/api/token",
 		Headers:     headers,
 		Body:        body,
