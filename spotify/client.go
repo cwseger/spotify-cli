@@ -57,14 +57,14 @@ func NewClient() (*DefaultClient, error) {
 }
 
 // GetArtist -
-func (c *DefaultClient) GetArtist(ctx context.Context, artist string) (*GetArtistOutput, error) {
+func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArtistOutput, error) {
 	tokenResponse, err := c.getAccessToken()
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
 
 	queryParams := &map[string]string{
-		"q":     artist,
+		"q":     strings.Join(artist, ""),
 		"limit": "1",
 		"type":  "artist",
 	}
