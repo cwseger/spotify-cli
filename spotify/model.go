@@ -6,8 +6,8 @@ type ClientSecrets struct {
 	ClientSecret string `json:"clientSecret"`
 }
 
-// TokenResponse -
-type TokenResponse struct {
+// GetTokenOutput -
+type GetTokenOutput struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`

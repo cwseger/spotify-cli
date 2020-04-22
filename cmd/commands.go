@@ -18,7 +18,7 @@ var commands = []*cobra.Command{
 				fmt.Println(err, "Failed to create new spotify client")
 				return
 			}
-			out, err := spotifyClient.GetToken()
+			out, err := spotifyClient.GetToken(cmd.Context())
 			if err != nil {
 				fmt.Println(err, "Failed to get token")
 			}

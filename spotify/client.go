@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
 
 	"strings"
@@ -19,12 +17,12 @@ import (
 
 // Client -
 type Client interface {
-	GetArtist(ctx context.Context, artist ...string)
+	GetArtist(ctx context.Context, artist []string)
 	GetCategoryList(ctx context.Context) (*GetCategoriesOutput, error)
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
 	GetRecommendationsByArtists(ctx context.Context, artists string) (*GetRecommendationsByArtistOutput, error)
 	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
-	GetToken() (*TokenResponse, error)
+	GetToken(ctx context.Context) (*GetTokenOutput, error)
 }
 
 // DefaultClient -
@@ -58,7 +56,7 @@ func NewClient() (*DefaultClient, error) {
 
 // GetArtist -
 func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArtistOutput, error) {
-	tokenResponse, err := c.getAccessToken()
+	tokenResponse, err := c.getAccessToken(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
@@ -86,7 +84,7 @@ func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArt
 
 // GetCategoryList -
 func (c *DefaultClient) GetCategoryList(ctx context.Context) (*GetCategoriesOutput, error) {
-	tokenResponse, err := c.getAccessToken()
+	tokenResponse, err := c.getAccessToken(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
@@ -112,7 +110,7 @@ func (c *DefaultClient) GetCategoryList(ctx context.Context) (*GetCategoriesOutp
 
 // GetCategoryPlaylists -
 func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error) {
-	tokenResponse, err := c.getAccessToken()
+	tokenResponse, err := c.getAccessToken(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
@@ -142,7 +140,7 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 
 // GetRecommendationsByArtists -
 func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists ...string) (*GetRecommendationsByArtistOutput, error) {
-	tokenResponse, err := c.getAccessToken()
+	tokenResponse, err := c.getAccessToken(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
@@ -169,7 +167,7 @@ func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists
 
 // GetNewReleases -
 func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error) {
-	tokenResponse, err := c.getAccessToken()
+	tokenResponse, err := c.getAccessToken(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
@@ -194,46 +192,30 @@ func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutp
 }
 
 // GetToken -
-func (c *DefaultClient) GetToken() (*TokenResponse, error) {
-	return c.getAccessToken()
+func (c *DefaultClient) GetToken(ctx context.Context) (*GetTokenOutput, error) {
+	return c.getAccessToken(ctx)
 }
 
-func (c *DefaultClient) getAccessToken() (*TokenResponse, error) {
-	// fmt.Println("Getting access token")
+func (c *DefaultClient) getAccessToken(ctx context.Context) (*GetTokenOutput, error) {
 	data := []byte(fmt.Sprintf("%s:%s", c.clientID, c.clientSecret))
 	str := base64.StdEncoding.EncodeToString(data)
-	// fmt.Println(fmt.Sprintf("Encoded data: %+v", str))
 
-	// header := &map[string]string{
-	// 	"Authorization": "Basic " + str,
-	// 	"Content-Type":  "application/x-www-form-urlencoded",
-	// }
-	// body := &map[string]string{
-	// 	"grant_type": "client_credentials",
-	// }
-	bodyValues := url.Values{}
-	bodyValues.Set("grant_type", "client_credentials")
-	tokenReq, err := http.NewRequest(http.MethodPost, "https://accounts.spotify.com/api/token", strings.NewReader(bodyValues.Encode()))
-	if err != nil {
-		fmt.Println(fmt.Sprintf("Failed to build token request. Err: %+v", err))
-		return nil, err
+	headers := &map[string]string{
+		"Authorization": "Basic " + str,
+		"Content-Type":  "application/x-www-form-urlencoded",
 	}
-	tokenReq.Header.Add("Authorization", "Basic "+str)
-	tokenReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	body := &map[string]string{
+		"grant_type": "client_credentials",
+	}
+	var output GetTokenOutput
+	if err := c.requestor.Post(ctx, &httputil.PostInput{
+		URL:         "https://accounts.spotify.com/api/token",
+		Headers:     headers,
+		Body:        body,
+		Destination: &output,
+	}); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get access token")
+	}
 
-	httpClient := http.Client{}
-	tokenResp, err := httpClient.Do(tokenReq)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("Failed to do token request. Err: %+v", err))
-		return nil, err
-	}
-	defer tokenResp.Body.Close()
-	tokenBody, err := ioutil.ReadAll(tokenResp.Body)
-	var resp TokenResponse
-	err = json.Unmarshal(tokenBody, &resp)
-	if err != nil {
-		fmt.Println(fmt.Sprintf("Failed to unmarshal token response. Err: %+v", err))
-	}
-	// fmt.Println(fmt.Sprintf("Token resp body: (%+v) %+v (%+v)", tokenResp.Status, string(tokenBody), resp))
-	return &resp, nil
+	return &output, nil
 }

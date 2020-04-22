@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	neturl "net/url"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -14,7 +15,7 @@ import (
 // Requestor -
 type Requestor interface {
 	Get(ctx context.Context, input *GetInput) error
-	// Post() error
+	Post(ctx context.Context, input *PostInput) error
 }
 
 // DefaultRequestor -
@@ -44,13 +45,47 @@ func (r *DefaultRequestor) Get(ctx context.Context, input *GetInput) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return errors.WithMessage(err, "Failed to build new request with context")
+		return errors.WithMessage(err, "Failed to build new GET request with context")
 	}
 	r.addHeadersToRequest(input.Headers, req)
 
 	resp, err := r.httpClient.Do(req)
 	if err != nil {
-		return errors.WithMessage(err, "Failed to execute request")
+		return errors.WithMessage(err, "Failed to execute GET request")
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return errors.WithMessage(err, "Failed to read response body")
+	}
+
+	if err := json.Unmarshal(body, input.Destination); err != nil {
+		return errors.WithMessage(err, "Failed to unmarshal response body")
+	}
+	return nil
+}
+
+// Post -
+func (r *DefaultRequestor) Post(ctx context.Context, input *PostInput) error {
+	url, err := r.replaceSlugsWithValues(input.URL, input.Slugs)
+	if err != nil {
+		return errors.WithMessage(err, "Failed to replace slugs with values")
+	}
+
+	bodyValues := neturl.Values{}
+	for k, v := range *input.Body {
+		bodyValues.Set(k, v)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, strings.NewReader(bodyValues.Encode()))
+	if err != nil {
+		return errors.WithMessage(err, "Failed to build new POST request with context")
+	}
+	r.addHeadersToRequest(input.Headers, req)
+
+	resp, err := r.httpClient.Do(req)
+	if err != nil {
+		return errors.WithMessage(err, "Failed to execute POST request")
 	}
 	defer resp.Body.Close()
 
@@ -110,33 +145,3 @@ func (r *DefaultRequestor) addHeadersToRequest(headers *map[string]string, req *
 		req.Header.Add(k, v)
 	}
 }
-
-// // Post -
-// func (r *DefaultRequestor) Post(ctx context.Context, url string, slugs *map[string]string, headers *map[string]string, body *map[string]string, destination interface{}) error {
-// 	url, err := r.replaceSlugsWithValues(url, slugs)
-// 	if err != nil {
-// 		return errors.WithMessage(err, "Failed to replace slugs with values")
-// 	}
-
-// 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
-// 	if err != nil {
-// 		return errors.WithMessage(err, "Failed to build new request with context")
-// 	}
-// 	r.addHeadersToRequest(headers, req)
-
-// 	resp, err := r.httpClient.Do(req)
-// 	if err != nil {
-// 		return errors.WithMessage(err, "Failed to execute request")
-// 	}
-// 	defer resp.Body.Close()
-
-// 	body, err := ioutil.ReadAll(resp.Body)
-// 	if err != nil {
-// 		return errors.WithMessage(err, "Failed to read response body")
-// 	}
-
-// 	if err := json.Unmarshal(body, destination); err != nil {
-// 		return errors.WithMessage(err, "Failed to unmarshal response body")
-// 	}
-// 	return nil
-// }
