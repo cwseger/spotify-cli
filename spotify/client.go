@@ -27,7 +27,7 @@ type Client interface {
 
 // DefaultClient -
 type DefaultClient struct {
-	token     *GetTokenOutput
+	authToken *GetTokenOutput
 	requestor req.Requestor
 }
 
@@ -52,7 +52,7 @@ func NewClient() (*DefaultClient, error) {
 	}
 
 	return &DefaultClient{
-		token:     getTokenOutput,
+		authToken: getTokenOutput,
 		requestor: req.NewRequestor(),
 	}, nil
 }
@@ -65,7 +65,7 @@ func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArt
 		"type":  "artist",
 	}
 	headers := &map[string]string{
-		"Authorization": "Bearer " + c.token.AccessToken,
+		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
 	var output GetArtistOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
@@ -86,7 +86,7 @@ func (c *DefaultClient) GetCategoryList(ctx context.Context) (*GetCategoriesOutp
 		"limit": "50",
 	}
 	headers := &map[string]string{
-		"Authorization": "Bearer " + c.token.AccessToken,
+		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
 	var output GetCategoriesOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
@@ -110,7 +110,7 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 		"limit": "5",
 	}
 	headers := &map[string]string{
-		"Authorization": "Bearer " + c.token.AccessToken,
+		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
 	var output GetCategoryPlaylistsOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
@@ -133,7 +133,7 @@ func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists
 		"limit":        "3",
 	}
 	headers := &map[string]string{
-		"Authorization": "Bearer " + c.token.AccessToken,
+		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
 	var output GetRecommendationsByArtistOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
@@ -154,7 +154,7 @@ func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutp
 		"limit": "50",
 	}
 	headers := &map[string]string{
-		"Authorization": "Bearer " + c.token.AccessToken,
+		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
 	var output GetNewReleasesOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
