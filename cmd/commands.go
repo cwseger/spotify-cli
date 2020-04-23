@@ -9,23 +9,6 @@ import (
 
 var commands = []*cobra.Command{
 	{
-		Use:     "token",
-		Short:   "Get an auth token used for authenticating requests to the spotify api",
-		Example: "spotify-cli token",
-		Run: func(cmd *cobra.Command, args []string) {
-			spotifyClient, err := spotify.NewClient()
-			if err != nil {
-				fmt.Println(err, "Failed to create new spotify client")
-				return
-			}
-			out, err := spotifyClient.GetToken(cmd.Context())
-			if err != nil {
-				fmt.Println(err, "Failed to get token")
-			}
-			fmt.Println(out.AccessToken)
-		},
-	},
-	{
 		Use:     "artist",
 		Short:   "Get an artist",
 		Example: "spotify-cli artist The Black Keys",
