@@ -22,7 +22,6 @@ type Client interface {
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
 	GetRecommendationsByArtists(ctx context.Context, artists string) (*GetRecommendationsByArtistOutput, error)
 	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
-	GetToken(ctx context.Context) (*GetTokenOutput, error)
 }
 
 // DefaultClient -
