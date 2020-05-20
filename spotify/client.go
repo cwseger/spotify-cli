@@ -13,14 +13,16 @@ import (
 
 // Client -
 type Client interface {
-	GetArtist(ctx context.Context, artist []string)
-	GetCategoryList(ctx context.Context) (*GetCategoriesOutput, error)
+	GetArtist(ctx context.Context, artist string) (*GetArtistOutput, error)
+	GetCategoryList(ctx context.Context, limit string) (*GetCategoriesOutput, error)
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
-	GetRecommendationsByArtists(ctx context.Context, artists string) (*GetRecommendationsByArtistOutput, error)
+	GetRecommendationsByArtist(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error)
 	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
-	GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error)
-	GetAlbumTracks(ctx context.Context, album string) (*GetAlbumTracksOutput, error)
+	// GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error)
+	// GetAlbumTracks(ctx context.Context, album string) (*GetAlbumTracksOutput, error)
 }
+
+var _ Client = &DefaultClient{}
 
 // DefaultClient -
 type DefaultClient struct {
@@ -109,8 +111,8 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 	return &output, nil
 }
 
-// GetRecommendationsByArtists -
-func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error) {
+// GetRecommendationsByArtist -
+func (c *DefaultClient) GetRecommendationsByArtist(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error) {
 	getSearchOutput, err := c.getSpotifyIDForResource(ctx, artist, "artist")
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get spotify id for artist")

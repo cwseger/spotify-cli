@@ -111,7 +111,7 @@ var commands = []*cobra.Command{
 				fmt.Println("Failed to create new spotify client", err)
 				return
 			}
-			out, err := spotifyClient.GetRecommendationsByArtists(cmd.Context(), strings.Join(args, ""))
+			out, err := spotifyClient.GetRecommendationsByArtist(cmd.Context(), strings.Join(args, ""))
 			if err != nil {
 				fmt.Println("Failed to get recommendations by artist", err)
 			}
