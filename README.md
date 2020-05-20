@@ -14,12 +14,10 @@ After creating an account you will need to create a new app in order to get cred
 When you've created a new application you will have access to your `clientId` and `clientSecret`.
 
 ### Add Secrets File
-Add a file called client-secrets.json in the root of the directory. It should look like this:
+Add a file called .env in the root of the directory. It should look like this:
 ```
-{
-    "clientId": "<your client id here>",
-    "clientSecret": "<your client secret here>"
-}
+CLIENT_ID=<your client ID here>
+CLIENT_SECRET=<your client secret here>
 ```
 
 ### Build/Install
