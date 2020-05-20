@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/cwseger/spotify-cli/spotify"
 	cobra "github.com/spf13/cobra"
@@ -12,13 +14,20 @@ var commands = []*cobra.Command{
 		Use:     "artist",
 		Short:   "Get an artist",
 		Example: "spotify-cli artist The Black Keys",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return errors.New("Must provide an artist as an argument")
+			}
+			return nil
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {
 				fmt.Println(err, "Failed to create new spotify client")
 				return
 			}
-			out, err := spotifyClient.GetArtist(cmd.Context(), args)
+
+			out, err := spotifyClient.GetArtist(cmd.Context(), strings.Join(args, ""))
 			if err != nil {
 				fmt.Println(err, "Failed to get artist")
 			}
@@ -28,14 +37,23 @@ var commands = []*cobra.Command{
 	{
 		Use:     "categories",
 		Short:   "Get a list of categories",
-		Example: "spotify-cli categories",
+		Example: "spotify-cli categories 2",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 1 {
+				return errors.New("Too many args")
+			}
+			return nil
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {
 				fmt.Println(err, "Failed to create new spotify client")
 				return
 			}
-			out, err := spotifyClient.GetCategoryList(cmd.Context())
+			if len(args) < 1 {
+				args = []string{"50"}
+			}
+			out, err := spotifyClient.GetCategoryList(cmd.Context(), args[0])
 			if err != nil {
 				fmt.Println(err, "Failed to get category list")
 			}
@@ -48,6 +66,7 @@ var commands = []*cobra.Command{
 		Use:     "category-playlist",
 		Short:   "Get a list of playlists tagged with the specified category",
 		Example: "spotify-cli category-playlist chill",
+		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {
@@ -85,6 +104,7 @@ var commands = []*cobra.Command{
 	{
 		Use:   "recommendations",
 		Short: "Get recommended tracks based on the provided artist",
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {

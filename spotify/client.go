@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"strings"
-
 	req "github.com/cwseger/spotify-cli/req"
 
 	"github.com/pkg/errors"
@@ -42,9 +40,9 @@ func NewClient() (*DefaultClient, error) {
 }
 
 // GetArtist -
-func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArtistOutput, error) {
+func (c *DefaultClient) GetArtist(ctx context.Context, artist string) (*GetArtistOutput, error) {
 	queryParams := &map[string]string{
-		"q":     strings.Join(artist, ""),
+		"q":     artist,
 		"limit": "1",
 		"type":  "artist",
 	}
@@ -65,9 +63,9 @@ func (c *DefaultClient) GetArtist(ctx context.Context, artist []string) (*GetArt
 }
 
 // GetCategoryList -
-func (c *DefaultClient) GetCategoryList(ctx context.Context) (*GetCategoriesOutput, error) {
+func (c *DefaultClient) GetCategoryList(ctx context.Context, limit string) (*GetCategoriesOutput, error) {
 	queryParams := &map[string]string{
-		"limit": "50",
+		"limit": limit,
 	}
 	headers := &map[string]string{
 		"Authorization": "Bearer " + c.authToken.AccessToken,
