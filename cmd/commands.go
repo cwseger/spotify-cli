@@ -66,7 +66,7 @@ var commands = []*cobra.Command{
 		Use:     "category-playlist",
 		Short:   "Get a list of playlists tagged with the specified category",
 		Example: "spotify-cli category-playlist chill",
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {
@@ -108,16 +108,42 @@ var commands = []*cobra.Command{
 		Run: func(cmd *cobra.Command, args []string) {
 			spotifyClient, err := spotify.NewClient()
 			if err != nil {
-				fmt.Println("Failed to create new spotify client")
+				fmt.Println("Failed to create new spotify client", err)
 				return
 			}
-			out, err := spotifyClient.GetRecommendationsByArtists(cmd.Context(), args...)
+			out, err := spotifyClient.GetRecommendationsByArtists(cmd.Context(), strings.Join(args, ""))
 			if err != nil {
-				fmt.Println("Failed to get category list")
+				fmt.Println("Failed to get recommendations by artist", err)
 			}
 			for _, track := range out.Tracks {
 				fmt.Println(track.Album.Name)
 			}
+		},
+	},
+	{
+		Use:     "album",
+		Short:   "Get Spotify catalog information for a single album",
+		Args:    cobra.ExactArgs(1),
+		Example: "TODO",
+		Run: func(cmd *cobra.Command, args []string) {
+			// spotifyClient, err := spotify.NewClient()
+			// if err != nil {
+			// 	fmt.Println("Failed to create new spotify client")
+			// 	return
+			// }
+		},
+	},
+	{
+		Use:     "album-tracks",
+		Short:   "Get Spotify catalog information about an album’s tracks",
+		Example: "spotify-cli album-tracks TODO",
+		Args:    cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			// spotifyClient, err := spotify.NewClient()
+			// if err != nil {
+			// 	fmt.Println("Failed to create new spotify client")
+			// 	return
+			// }
 		},
 	},
 }

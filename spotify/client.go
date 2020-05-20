@@ -18,6 +18,8 @@ type Client interface {
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
 	GetRecommendationsByArtists(ctx context.Context, artists string) (*GetRecommendationsByArtistOutput, error)
 	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
+	GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error)
+	GetAlbumTracks(ctx context.Context, album string) (*GetAlbumTracksOutput, error)
 }
 
 // DefaultClient -
@@ -104,15 +106,18 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get category's playlists")
 	}
-
 	return &output, nil
 }
 
 // GetRecommendationsByArtists -
-func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists ...string) (*GetRecommendationsByArtistOutput, error) {
+func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error) {
+	getSearchOutput, err := c.getSpotifyIDForResource(ctx, artist, "artist")
+	if err != nil {
+		return nil, errors.WithMessage(err, "Failed to get spotify id for artist")
+	}
 	queryParams := &map[string]string{
-		"seed_artists": artists[0],
-		"limit":        "3",
+		"seed_artists": getSearchOutput.Inner.Items[0].ID,
+		"limit":        "10",
 	}
 	headers := &map[string]string{
 		"Authorization": "Bearer " + c.authToken.AccessToken,
@@ -126,7 +131,6 @@ func (c *DefaultClient) GetRecommendationsByArtists(ctx context.Context, artists
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get recommendations by artist")
 	}
-
 	return &output, nil
 }
 
@@ -148,6 +152,26 @@ func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutp
 		return nil, errors.WithMessage(err, "Failed to get new releases")
 	}
 
+	return &output, nil
+}
+
+func (c *DefaultClient) getSpotifyIDForResource(ctx context.Context, resource string, resourceType string) (*GetSearchOutput, error) {
+	queryParams := &map[string]string{
+		"q":    resource,
+		"type": resourceType,
+	}
+	headers := &map[string]string{
+		"Authorization": "Bearer " + c.authToken.AccessToken,
+	}
+	var output GetSearchOutput
+	if err := c.requestor.Get(ctx, &req.GetInput{
+		URL:         "https://api.spotify.com/v1/search",
+		QueryParams: queryParams,
+		Headers:     headers,
+		Destination: &output,
+	}); err != nil {
+		return nil, errors.WithMessage(err, "Failed to search for spotify id")
+	}
 	return &output, nil
 }
 

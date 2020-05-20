@@ -105,3 +105,26 @@ type GetArtistInner struct {
 type GetArtistOutput struct {
 	Inner GetArtistInner `json:"artists"`
 }
+
+// GetAlbumOutput -
+type GetAlbumOutput struct {
+}
+
+// GetAlbumTracksOutput -
+type GetAlbumTracksOutput struct {
+}
+
+// GetSearchOutput -
+type GetSearchOutput struct {
+	Inner GetSearchInner `json:"artists"`
+}
+
+// GetSearchInner -
+type GetSearchInner struct {
+	Items []SearchItem `json:"items"`
+}
+
+// SearchItem -
+type SearchItem struct {
+	ID string `json:"id"`
+}
