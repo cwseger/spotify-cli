@@ -3,9 +3,7 @@ package spotify
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"strings"
@@ -32,20 +30,7 @@ type DefaultClient struct {
 
 // NewClient -
 func NewClient() (*DefaultClient, error) {
-	clientSecretsFile, err := os.Open("client-secrets.json")
-	if err != nil {
-		return nil, errors.WithMessage(err, "Failed to open secrets file")
-	}
-	defer clientSecretsFile.Close()
-
-	var secrets ClientSecrets
-	bytesValue, _ := ioutil.ReadAll(clientSecretsFile)
-	err = json.Unmarshal(bytesValue, &secrets)
-	if err != nil {
-		return nil, errors.WithMessage(err, "Failed to unmarshal client secrets file")
-	}
-
-	getTokenOutput, err := getAccessToken(secrets.ClientID, secrets.ClientSecret)
+	getTokenOutput, err := getAccessToken(os.Getenv("CLIENT_ID"), os.Getenv("CLIENT_SECRET"))
 	if err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
