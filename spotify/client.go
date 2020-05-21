@@ -14,11 +14,12 @@ import (
 // Client -
 type Client interface {
 	GetArtist(ctx context.Context, artist string) (*GetArtistOutput, error)
+	GetArtistAlbums(ctx context.Context, artist string) (*GetArtistAlbumOutput, error)
 	GetCategoryList(ctx context.Context, limit string) (*GetCategoriesOutput, error)
 	GetCategoryPlaylists(ctx context.Context, categoryID string) (*GetCategoryPlaylistsOutput, error)
 	GetRecommendationsByArtist(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error)
 	GetNewReleases(ctx context.Context) (*GetNewReleasesOutput, error)
-	// GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error)
+	GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error)
 	// GetAlbumTracks(ctx context.Context, album string) (*GetAlbumTracksOutput, error)
 }
 
@@ -62,7 +63,30 @@ func (c *DefaultClient) GetArtist(ctx context.Context, artist string) (*GetArtis
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get artist")
 	}
+	return &output, nil
+}
 
+// GetArtistAlbums -
+func (c *DefaultClient) GetArtistAlbums(ctx context.Context, artist string) (*GetArtistAlbumOutput, error) {
+	var getArtistSearchOutput GetArtistSearchOutput
+	if err := c.getSpotifyIDForResource(ctx, artist, "artist", &getArtistSearchOutput); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get spotify id for artist")
+	}
+	slugs := &map[string]string{
+		"{artistID}": getArtistSearchOutput.Inner.Items[0].ID,
+	}
+	headers := &map[string]string{
+		"Authorization": "Bearer " + c.authToken.AccessToken,
+	}
+	var output GetArtistAlbumOutput
+	if err := c.requestor.Get(ctx, &req.GetInput{
+		URL:         "https://api.spotify.com/v1/artists/{artistID}/albums",
+		Slugs:       slugs,
+		Headers:     headers,
+		Destination: &output,
+	}); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get artist's albums")
+	}
 	return &output, nil
 }
 
@@ -83,7 +107,6 @@ func (c *DefaultClient) GetCategoryList(ctx context.Context, limit string) (*Get
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get category list")
 	}
-
 	return &output, nil
 }
 
@@ -113,12 +136,12 @@ func (c *DefaultClient) GetCategoryPlaylists(ctx context.Context, categoryID str
 
 // GetRecommendationsByArtist -
 func (c *DefaultClient) GetRecommendationsByArtist(ctx context.Context, artist string) (*GetRecommendationsByArtistOutput, error) {
-	getSearchOutput, err := c.getSpotifyIDForResource(ctx, artist, "artist")
-	if err != nil {
+	var getArtistSearchOutput GetArtistSearchOutput
+	if err := c.getSpotifyIDForResource(ctx, artist, "artist", &getArtistSearchOutput); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get spotify id for artist")
 	}
 	queryParams := &map[string]string{
-		"seed_artists": getSearchOutput.Inner.Items[0].ID,
+		"seed_artists": getArtistSearchOutput.Inner.Items[0].ID,
 		"limit":        "10",
 	}
 	headers := &map[string]string{
@@ -157,7 +180,38 @@ func (c *DefaultClient) GetNewReleases(ctx context.Context) (*GetNewReleasesOutp
 	return &output, nil
 }
 
-func (c *DefaultClient) getSpotifyIDForResource(ctx context.Context, resource string, resourceType string) (*GetSearchOutput, error) {
+// GetAlbum -
+func (c *DefaultClient) GetAlbum(ctx context.Context, album string) (*GetAlbumOutput, error) {
+	var getAlbumSearchOutput GetAlbumSearchOutput
+	if err := c.getSpotifyIDForResource(ctx, album, "album", &getAlbumSearchOutput); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get spotify id for album")
+	}
+	queryParams := &map[string]string{
+		"q":     album,
+		"limit": "1",
+		"type":  "album",
+	}
+	slugs := &map[string]string{
+		"{albumID}": getAlbumSearchOutput.Inner.Items[0].ID,
+	}
+	headers := &map[string]string{
+		"Authorization": "Bearer " + c.authToken.AccessToken,
+	}
+
+	var output GetAlbumOutput
+	if err := c.requestor.Get(ctx, &req.GetInput{
+		URL:         "https://api.spotify.com/v1/albums/{albumID}",
+		Slugs:       slugs,
+		QueryParams: queryParams,
+		Headers:     headers,
+		Destination: &output,
+	}); err != nil {
+		return nil, errors.WithMessage(err, "Failed to get album")
+	}
+	return &output, nil
+}
+
+func (c *DefaultClient) getSpotifyIDForResource(ctx context.Context, resource string, resourceType string, output interface{}) error {
 	queryParams := &map[string]string{
 		"q":    resource,
 		"type": resourceType,
@@ -165,16 +219,15 @@ func (c *DefaultClient) getSpotifyIDForResource(ctx context.Context, resource st
 	headers := &map[string]string{
 		"Authorization": "Bearer " + c.authToken.AccessToken,
 	}
-	var output GetSearchOutput
 	if err := c.requestor.Get(ctx, &req.GetInput{
 		URL:         "https://api.spotify.com/v1/search",
 		QueryParams: queryParams,
 		Headers:     headers,
-		Destination: &output,
+		Destination: output,
 	}); err != nil {
-		return nil, errors.WithMessage(err, "Failed to search for spotify id")
+		return errors.WithMessage(err, "Failed to search for spotify id")
 	}
-	return &output, nil
+	return nil
 }
 
 func getAccessToken(clientID, clientSecret string) (*GetTokenOutput, error) {
@@ -197,6 +250,5 @@ func getAccessToken(clientID, clientSecret string) (*GetTokenOutput, error) {
 	}); err != nil {
 		return nil, errors.WithMessage(err, "Failed to get access token")
 	}
-
 	return &output, nil
 }

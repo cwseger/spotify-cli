@@ -14,6 +14,9 @@ var rootCmd = &cobra.Command{
 
 // Execute -
 func Execute() {
+	rootCmd.AddCommand(artistCommands...)
+	rootCmd.AddCommand(albumCommands...)
+	rootCmd.AddCommand(categoryCommands...)
 	rootCmd.AddCommand(commands...)
 
 	if err := rootCmd.Execute(); err != nil {

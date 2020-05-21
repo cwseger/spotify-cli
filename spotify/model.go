@@ -101,6 +101,11 @@ type GetArtistInner struct {
 	Artists []Artist `json:"items"`
 }
 
+// GetArtistAlbumOutput -
+type GetArtistAlbumOutput struct {
+	Albums []Album `json:"items"`
+}
+
 // GetArtistOutput -
 type GetArtistOutput struct {
 	Inner GetArtistInner `json:"artists"`
@@ -108,15 +113,27 @@ type GetArtistOutput struct {
 
 // GetAlbumOutput -
 type GetAlbumOutput struct {
+	Name       string   `json:"name"`
+	Popularity int      `json:"popularity"`
+	Artists    []Artist `json:"artists"`
+}
+
+// GetAlbumInner -
+type GetAlbumInner struct {
 }
 
 // GetAlbumTracksOutput -
 type GetAlbumTracksOutput struct {
 }
 
-// GetSearchOutput -
-type GetSearchOutput struct {
+// GetArtistSearchOutput -
+type GetArtistSearchOutput struct {
 	Inner GetSearchInner `json:"artists"`
+}
+
+// GetAlbumSearchOutput -
+type GetAlbumSearchOutput struct {
+	Inner GetSearchInner `json:"albums"`
 }
 
 // GetSearchInner -
