@@ -14,8 +14,8 @@ var rootCmd = &cobra.Command{
 
 // Execute -
 func Execute() {
-	rootCmd.AddCommand(artistCommands...)
 	rootCmd.AddCommand(albumCommands...)
+	rootCmd.AddCommand(artistCommands...)
 	rootCmd.AddCommand(categoryCommands...)
 	rootCmd.AddCommand(commands...)
 
